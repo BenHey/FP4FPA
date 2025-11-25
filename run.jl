@@ -28,11 +28,6 @@ function parse_cmd()
             arg_type = String
             default = "1-3;1-4;2-3;2-4"
 
-        "--scenarios_proba"
-            help = "scenario probabilities, e.g. 0.25,0.25,0.25,0.25"
-            arg_type = String
-            default = "0.25,0.25,0.25,0.25"
-
         "--B_step"
             help = "step size for B grid"
             arg_type = Float64
@@ -57,7 +52,7 @@ function main()
     # Convert parameters
     agent_values = parse_vec_float(args["agent_values"])
     scenarios = parse_vec_int_vec(args["scenarios"])
-    scenarios_proba = parse_vec_float(args["scenarios_proba"])
+    scenarios_proba = fill(1.0/length(scenarios), length(scenarios))
     niter = args["niter"]
     B_step = args["B_step"]
 
@@ -65,7 +60,7 @@ function main()
     B = get_B(0.0, 1.0, B_step)
 
     # Build a title-safe string for the folder
-    title = "agent_values=$(agent_values)-scenarios=$(scenarios)-scenarios_proba=$(scenarios_proba)"
+    title = "agent_values=$(agent_values)-scenarios=$(scenarios)"
 
     # Directory where images will be saved
     out_dir = "images/$(title)"
@@ -96,8 +91,8 @@ function main()
 
         factor = maximum(policy_density[agent]) / maximum(payoff)
 
-        plt = plot(policy_density[agent], label = "policy density", title = "agent=$agent")
-        plot!(plt, factor .* payoff, label = "scaled payoff")
+        plt = plot(B, policy_density[agent]/(maximum( policy_density[agent])+1.), label = "scaled policy density", title = "agent=$agent", ylims=(-0.02, Inf))
+        plot!(plt, B, payoff/(maximum(payoff)+1.), label = "scaled payoff")
 
         savefig(joinpath(out_dir, "agent=$(agent).png"))
     end
