@@ -32,6 +32,10 @@ function parse_cmd()
             help = "step size for B grid"
             arg_type = Float64
             default = 1/400
+        "--scaling"
+            help = "scaling "
+            arg_type = Float64
+            default = 1.0
     end
 
     return parse_args(s)
@@ -55,6 +59,7 @@ function main()
     scenarios_proba = fill(1.0/length(scenarios), length(scenarios))
     niter = args["niter"]
     B_step = args["B_step"]
+    scaling = args["scaling"]
 
     # Build B
     B = get_B(0.0, 1.0, B_step)
@@ -91,8 +96,8 @@ function main()
 
         factor = maximum(policy_density[agent]) / maximum(payoff)
 
-        plt = plot(B, policy_density[agent]/(maximum( policy_density[agent])+1.), label = "scaled policy density", title = "agent=$agent", ylims=(-0.02, Inf))
-        plot!(plt, B, payoff/(maximum(payoff)+1.), label = "scaled payoff")
+        plt = plot(B, policy_density[agent], label = "policy density", title = "agent=$agent", ylims=(-0.02, Inf))
+        plot!(plt, B, payoff*scaling, label = "scaled payoff")
 
         savefig(joinpath(out_dir, "agent=$(agent).png"))
     end
